@@ -35,21 +35,31 @@ def get_weather(city):
                 "day": datetime.fromisoformat(day_date).strftime('%A'),
                 "temps": [],
                 "rain_chances": [],
-                "weathers": {}
+                "weather_details": {}
             }
         daily_forecasts[day_date]["temps"].append(
             forecast_item["main"]["temp"])
         daily_forecasts[day_date]["rain_chances"].append(
             forecast_item.get("pop", 0))
         weather_desc = forecast_item["weather"][0]["description"]
-        daily_forecasts[day_date]["weathers"][weather_desc] = daily_forecasts[day_date]["weathers"].get(
-            weather_desc, 0) + 1
+        weather_icon = forecast_item["weather"][0]["icon"]
+        # Store count and icon for each weather description
+        if weather_desc not in daily_forecasts[day_date]["weather_details"]:
+            daily_forecasts[day_date]["weather_details"][weather_desc] = {
+                "count": 0, "icon": weather_icon}
+        daily_forecasts[day_date]["weather_details"][weather_desc]["count"] += 1
 
     # Consolidate daily data
-    final_forecasts = [{
-        "day": data["day"], "temp_max": max(data["temps"]), "temp_min": min(data["temps"]),
-        "rain_chance": max(data["rain_chances"]) * 100, "weather": max(data["weathers"], key=data["weathers"].get)
-    } for data in daily_forecasts.values()]
+    final_forecasts = []
+    for data in daily_forecasts.values():
+        most_common_weather = max(
+            data["weather_details"], key=lambda k: data["weather_details"][k]["count"])
+        final_forecasts.append({
+            "day": data["day"], "temp_max": max(data["temps"]), "temp_min": min(data["temps"]),
+            "rain_chance": max(data["rain_chances"]) * 100,
+            "weather": most_common_weather,
+            "icon": data["weather_details"][most_common_weather]["icon"]
+        })
 
     return {
         "city": weather_data["city"]["name"],
