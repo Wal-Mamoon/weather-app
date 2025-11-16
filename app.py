@@ -10,11 +10,6 @@ CORS(app)
 app.wsgi_app = WhiteNoise(
     app.wsgi_app, root=app.static_folder, index_file=True)
 
-
-@app.route("/")
-def home():
-    return send_from_directory(app.static_folder, "index.html")
-
 # Forecast API
 
 
