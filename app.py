@@ -1,23 +1,19 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from weather_api import get_weather
+from whitenoise import WhiteNoise
 
 app = Flask(__name__, static_folder="../frontend")
 CORS(app)
 
-# Serve index.html at the root
+# Use WhiteNoise to serve static files in production
+app.wsgi_app = WhiteNoise(
+    app.wsgi_app, root=app.static_folder, index_file=True)
 
 
 @app.route("/")
 def home():
     return send_from_directory(app.static_folder, "index.html")
-
-# Serve other static files (CSS, JS)
-
-
-@app.route("/<path:path>")
-def static_files(path):
-    return send_from_directory(app.static_folder, path)
 
 # Forecast API
 
